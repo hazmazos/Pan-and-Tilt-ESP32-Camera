@@ -11,7 +11,5 @@ void setup() {
   
 
 void loop() {
-
-  for(int i=0; i<=200; i++)
 }
 
