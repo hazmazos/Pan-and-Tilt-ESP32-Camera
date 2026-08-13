@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width , initial-scale=1.0">
+    
+    <title>ESP32 Servo Controller</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>ESP32 Servo Controller</h1>
+
+        <div class="servo-control">
+
+            <h2>Pan</h2>
+            
+            <input type="number" id="panAngle" min="0" max="180" value="90">
+
+            <span>°</span>
+
+            <input type="range" id="panSlider" min="0" max="180" value="90">
+
+            <p>Pan angle: <span id="panDisplay">90</span>°</p>
+                        
+        </div>
+
+        <div class="servo-control">
+
+            <h2>Tilt</h2>
+            
+            <input type="number" id="tiltAngle" min="0" max="180" value="90">
+
+            <span>°</span>
+
+            <input type="range" id="tiltSlider" min="0" max="180" value="90">
+
+            <p>Tilt angle: <span id="tiltDisplay">90</span>°</p>
+                        
+        </div>
+
+        <button id="homeButton">Home</button>
+
+    </div>
+
+</body>
+
+
+</html>
