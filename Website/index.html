@@ -16,35 +16,49 @@
 
         <h1>ESP32 Servo Controller</h1>
 
-        <div class="servo-control">
+        <div class = "controls">
 
-            <h2>Pan</h2>
+            <div class = "sliders">
+
+                <div class="servo-control">
+
+                    <h2>Pan</h2>
+                    
+                    <input type="number" id="panAngle" min="0" max="180" value="90" readonly>
+
+                    <span>°</span>
+
+                    <input type="range" id="panSlider" min="0" max="180" value="90">
+
+                    <p>Pan angle: <span id="panDisplay">90</span>°</p>
+                                
+                </div>
+
+                <div class="servo-control">
+
+                    <h2>Tilt</h2>
+                    
+                    <input type="number" id="tiltAngle" min="0" max="180" value="90" readonly>
+
+                    <span>°</span>
+
+                    <input type="range" id="tiltSlider" min="0" max="180" value="90">
+
+                    <p>Tilt angle: <span id="tiltDisplay">90</span>°</p>
+                                
+                </div>
+
+                <button id="homeButton">Home</button>
+
+            </div>
             
-            <input type="number" id="panAngle" min="0" max="180" value="90" readonly>
+            <div class="map" id="mapPosition">
+                
+                <h2>Click to move</h2>
 
-            <span>°</span>
+            </div>
 
-            <input type="range" id="panSlider" min="0" max="180" value="90">
-
-            <p>Pan angle: <span id="panDisplay">90</span>°</p>
-                        
         </div>
-
-        <div class="tilt-control">
-
-            <h2>Tilt</h2>
-            
-            <input type="number" id="tiltAngle" min="0" max="180" value="90" readonly>
-
-            <span>°</span>
-
-            <input type="range" id="tiltSlider" min="0" max="180" value="90">
-
-            <p>Tilt angle: <span id="tiltDisplay">90</span>°</p>
-                        
-        </div>
-
-        <button id="homeButton">Home</button>
 
     </div>
 

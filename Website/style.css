@@ -12,6 +12,25 @@ body{
     background-color: white;
     border-radius: 10px;
     text-align: center; 
+
+}
+
+.controls {
+    display : flex;
+    gap: 20px;
+
+}
+
+.sliders {
+    flex:1
+}
+
+.map {
+    flex:2;
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
 }
 
 h1 {
