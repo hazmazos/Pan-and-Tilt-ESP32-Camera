@@ -22,29 +22,19 @@
 
                 <div class="servo-control">
 
-                    <h2>Pan</h2>
-                    
-                    <input type="number" id="panAngle" min="0" max="180" value="90" readonly>
-
-                    <span>°</span>
-
+                    <h2>Pan</h2>                                 
                     <input type="range" id="panSlider" min="0" max="180" value="90">
 
-                    <p>Pan angle: <span id="panDisplay">90</span>°</p>
+                    <h2>Tilt</h2> 
+                    <input type="range" id="tiltSlider" min="0" max="180" value="90">
                                 
                 </div>
 
                 <div class="servo-control">
 
-                    <h2>Tilt</h2>
-                    
-                    <input type="number" id="tiltAngle" min="0" max="180" value="90" readonly>
-
-                    <span>°</span>
-
-                    <input type="range" id="tiltSlider" min="0" max="180" value="90">
-
-                    <p>Tilt angle: <span id="tiltDisplay">90</span>°</p>
+                    <h2>Angles</h2>
+                    <p>Pan angle:<span id="panDisplay">90</span>°</p>
+                    <p>Tilt angle:<span id="tiltDisplay">90</span>°</p>
                                 
                 </div>
 
@@ -52,9 +42,11 @@
 
             </div>
             
-            <div class="map" id="mapPosition">
+            <div class="map">
                 
                 <h2>Click to move</h2>
+                
+                <div class="grid"></div>
 
             </div>
 

@@ -22,7 +22,7 @@ body{
 }
 
 .sliders {
-    flex:1
+    flex:1.5;
 }
 
 .map {
@@ -33,13 +33,21 @@ body{
     border-radius: 8px;
 }
 
+.grid {
+    width:270px;
+    height:270px;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 8px;
+}
+
 h1 {
     margin-bottom: 30px;
 }
 
 .servo-control {
     margin-bottom: 30px;
-    padding: 20px;
+    padding: 9px;
     border: 1px solid #ddd;
     border-radius: 8px;
 }
