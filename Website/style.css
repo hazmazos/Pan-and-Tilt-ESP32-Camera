@@ -39,6 +39,25 @@ body{
     padding: 10px;
     border: 2px solid black;
     border-radius: 8px;
+    position:relative;
+
+    background-image:
+        linear-gradient(to right, #ccc 1px, transparent 3px),
+        linear-gradient(to bottom, #ccc 1px, transparent 3px);
+
+    background-size: 147px 147px;
+}
+
+.target{
+    width:11px;
+    height:11px;
+    
+    border: 2px solid black;
+    border-radius: 50%;
+
+    position:absolute;
+
+    transform: translate(-50%, -50%);
 }
 
 h1 {
