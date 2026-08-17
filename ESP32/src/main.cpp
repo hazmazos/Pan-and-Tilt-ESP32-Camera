@@ -47,7 +47,7 @@ void setup() {
     File file = LittleFS.open("/index.html", "r");
 
     if(!file){
-      Serial.println("File not found");
+      Serial.println("index file not found");
       return;
     }
     server.streamFile(file,"text/html");
@@ -55,7 +55,42 @@ void setup() {
     
   });
 
-  server.serveStatic("/", LittleFS, "/");
+  server.on("/script.js", HTTP_GET, []{
+
+    File file = LittleFS.open("/script.js", "r");
+
+    if(!file){
+      Serial.println("script file not found");
+      return;
+    }
+    server.streamFile(file,"text/javascript");
+    file.close();
+
+  });
+
+  server.on("/style.css", HTTP_GET, []{
+    
+    File file = LittleFS.open("/style.css","r");
+
+    if(!file)
+    {
+      Serial.println("style file not found");
+      return;      
+    }
+
+    server.streamFile(file,"text/css");
+    file.close();
+
+
+  });
+
+  server.on("/pan", HTTP_GET, [](){
+
+    Serial.println("Pan info receieved");
+    server.send(200,"text/plain","Pan info receieved");
+
+  });
+  
 
   server.begin();
 }
