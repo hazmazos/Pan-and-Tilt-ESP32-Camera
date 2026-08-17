@@ -1,0 +1,93 @@
+body{
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+    text-align: center; 
+
+}
+
+.controls {
+    display : flex;
+    gap: 20px;
+
+}
+
+.sliders {
+    flex:1.5;
+}
+
+.map {
+    flex:2;
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.grid {
+    width:270px;
+    height:270px;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 8px;
+    position:relative;
+
+    background-image:
+        linear-gradient(to right, #ccc 1px, transparent 3px),
+        linear-gradient(to bottom, #ccc 1px, transparent 3px);
+
+    background-size: 147px 147px;
+}
+
+.target{
+    width:11px;
+    height:11px;
+    
+    border: 2px solid black;
+    border-radius: 50%;
+
+    position:absolute;
+
+    transform: translate(-50%, -50%);
+}
+
+h1 {
+    margin-bottom: 30px;
+}
+
+.servo-control {
+    margin-bottom: 30px;
+    padding: 9px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+input[type="number"] {
+    width: 60px;
+    padding: 8px;
+    font-size: 16px; 
+}
+
+input[type="range"] {
+    width: 80%;
+    margin: 20px;
+}
+
+p { 
+    font-size: 18px;
+}
+
+button {
+    padding: 10px 30px;
+    font-size: 16px; 
+    cursor: pointer;
+}
