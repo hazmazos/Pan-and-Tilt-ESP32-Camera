@@ -10,6 +10,7 @@ const marker = document.getElementById("marker");
 
 const homeButton = document.getElementById("homeButton");
 
+// turn coords to angle
 const scaleFactor = 180/294;
 
 
@@ -20,6 +21,8 @@ panSlider.addEventListener("input", function() {
     panDisplay.textContent = angle;
     setMarker(angle,null);
 
+    fetch("/pan?angle="+angle);
+
 });
 
 
@@ -29,6 +32,8 @@ tiltSlider.addEventListener("input", function(){
     angle = tiltSlider.value;
     tiltDisplay.textContent = angle;
     setMarker(null,angle);
+
+    fetch("/tilt?angle="+angle);
 
 });
 
@@ -42,11 +47,14 @@ mapInput.addEventListener("click", function(event){
     marker.style.left = xCoords + "px";
     marker.style.top = yCoords + "px";
 
-    xScaled = Math.round(xCoords * scaleFactor);
-    yScaled = Math.round(yCoords * scaleFactor);
+    panAngle = Math.round(xCoords * scaleFactor);
+    tiltAngle = Math.round(yCoords * scaleFactor);
 
-    updateAngle(panSlider,panDisplay,xScaled);
-    updateAngle(tiltSlider,tiltDisplay,yScaled);
+    updateAngle(panSlider,panDisplay,panAngle);
+    updateAngle(tiltSlider,tiltDisplay,tiltAngle);
+
+    fetch("/pan?angle="+panAngle);
+    fetch("/tilt?angle="+tiltAngle);
 
     
 
@@ -58,6 +66,9 @@ homeButton.addEventListener("click", function(){
     updateAngle(panSlider,panDisplay,90);
     updateAngle(tiltSlider,tiltDisplay,90);
     setMarker(90,90);
+
+    fetch("/pan?angle=90");
+    fetch("/tilt?angle=90");
 });
 
 function updateAngle(slider,display,value){

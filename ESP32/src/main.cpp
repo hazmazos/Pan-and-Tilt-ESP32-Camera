@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <LittleFS.h>
-#include <Wifi.h>
-#include <Webserver.h>
+#include <WiFi.h>
+#include <WebServer.h>
 #include <ESPmDNS.h>
 
 //#include <ESP32Servo.h>
@@ -86,8 +86,27 @@ void setup() {
 
   server.on("/pan", HTTP_GET, [](){
 
-    Serial.println("Pan info receieved");
-    server.send(200,"text/plain","Pan info receieved");
+    String value = server.arg("angle");
+  
+    int panAngle = value.toInt();
+    Serial.print("Pan angle is: " );
+    Serial.println(panAngle);
+
+    
+    server.send(200,"text/plain","Pan angle is: "+value);
+
+  });
+
+  server.on("/tilt", HTTP_GET, [](){
+
+    String value = server.arg("angle");
+  
+    int tiltAngle = value.toInt();
+    Serial.print("Tilt angle is: " );
+    Serial.println(tiltAngle);
+
+    
+    server.send(200,"text/plain","Tilt angle is: "+value);
 
   });
   
