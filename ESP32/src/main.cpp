@@ -4,10 +4,10 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 
-//#include <ESP32Servo.h>
+#include <ESP32Servo.h>
 
-//Servo myservo;
-//const int servoPin = 13;
+Servo myservo;
+const int servoPin = 1;
 
 const char* ssid = "";
 const char* password = "";
@@ -91,6 +91,8 @@ void setup() {
     int panAngle = value.toInt();
     Serial.print("Pan angle is: " );
     Serial.println(panAngle);
+    myservo.write(panAngle);
+    
 
     
     server.send(200,"text/plain","Pan angle is: "+value);
@@ -104,14 +106,17 @@ void setup() {
     int tiltAngle = value.toInt();
     Serial.print("Tilt angle is: " );
     Serial.println(tiltAngle);
+   
 
     
     server.send(200,"text/plain","Tilt angle is: "+value);
 
-  });
-  
+  });  
 
   server.begin();
+
+  myservo.attach(servoPin); 
+  myservo.write(90);
 }
   
 
