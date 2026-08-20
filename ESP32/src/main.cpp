@@ -6,8 +6,11 @@
 
 #include <ESP32Servo.h>
 
-Servo myservo;
-const int servoPin = 1;
+Servo panServo;
+Servo tiltServo; 
+
+const int panServoPin = 1;
+const int tiltServoPin = 2;
 
 const char* ssid = "";
 const char* password = "";
@@ -91,7 +94,8 @@ void setup() {
     int panAngle = value.toInt();
     Serial.print("Pan angle is: " );
     Serial.println(panAngle);
-    myservo.write(panAngle);
+
+    panServo.write(panAngle);
     
 
     
@@ -106,6 +110,8 @@ void setup() {
     int tiltAngle = value.toInt();
     Serial.print("Tilt angle is: " );
     Serial.println(tiltAngle);
+
+    tiltServo.write(tiltAngle);
    
 
     
@@ -115,8 +121,10 @@ void setup() {
 
   server.begin();
 
-  myservo.attach(servoPin); 
-  myservo.write(90);
+  panServo.attach(panServoPin);
+  tiltServo.attach(tiltServoPin);  
+  panServo.write(90);
+  tiltServo.write(90);
 }
   
 
