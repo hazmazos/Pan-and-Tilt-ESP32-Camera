@@ -40,10 +40,11 @@ Servo tiltServo;
 const char* ssid = "";
 const char* password = "";
 
+
 WebServer server(80);
 
 void setup() {
-  
+
   Serial.begin(115200);
 
 
@@ -84,7 +85,7 @@ void setup() {
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
   config.frame_size = FRAMESIZE_VGA;
-  config.jpeg_quality = 8;
+  config.jpeg_quality = 12;
   config.fb_count = 1;
 
   esp_err_t err = esp_camera_init(&config);

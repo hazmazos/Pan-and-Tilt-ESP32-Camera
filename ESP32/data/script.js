@@ -10,12 +10,80 @@ const marker = document.getElementById("marker");
 
 const homeButton = document.getElementById("homeButton");
 
-// turn coords to angle
-const scaleFactor = 180/294;
+const camera = document.getElementById("camera");
 
+let frameTimes = [];
+let jpegSizes = [];
+
+let squaredFrameTimeDeviations = [];
+let squaredJpegDeviations = [];
+
+
+let frameCount = 0;
+const endFrame = 50;
+
+function getFrame(){
+    
+    const start = performance.now();
+
+    fetch("/capture")
+    .then(respone => respone.blob())
+    .then( blob => {
+
+        const end = performance.now();
+
+        const frameTime =  end - start;
+        frameTimes.push(frameTime);
+        jpegSizes.push(blob.size);
+
+        frameCount++;
+
+        const totalFrameTimes = frameTimes.reduce((total,value) => total + value, 0);
+        
+        const totalJpegSizes = jpegSizes.reduce((total,value) => total + value, 0);
+        
+        const imageURL = URL.createObjectURL(blob);
+        camera.src = imageURL;
+
+        if(frameCount < endFrame){
+
+            getFrame();
+        }
+
+        else{
+            const averageFrameTimes = totalFrameTimes / frameTimes.length;
+            const averageJpegSizes = totalJpegSizes / jpegSizes.length;
+
+            console.log("Average FPS is: ", averageFrameTimes);
+            console.log("Average jpeg size is: ", averageJpegSizes);
+
+            for(let i = 0; i < endFrame; i++){
+
+                const squaredFrameTimeError =(frameTimes[i] - averageFrameTimes)**2;
+                squaredFrameTimeDeviations.push(squaredFrameTimeError);
+
+                const squaredJpegError =(jpegSizes[i] - averageJpegSizes)**2;
+                squaredJpegDeviations.push(squaredJpegError);
+                
+            }
+
+            const averageFrameTimeVariance = squaredFrameTimeDeviations.reduce((total,value) => total + value,0)/squaredFrameTimeDeviations.length;
+            const jpegFrameVariance = squaredJpegDeviations.reduce((total,value) => total + value,0)/squaredJpegDeviations.length;
+
+            console.log("Frame time deviation is: ", averageFrameTimeVariance**0.5);
+            console.log("Jpeg deviation size is: ", jpegFrameVariance**0.5);
+
+            
+        }
+        
+    })
+
+};
+
+getFrame();
 
 // Pan Slider Logic
-panSlider.addEventListener("input", function() {
+panSlider.addEventListener("input", function(){
 
     const angle = panSlider.value;
     panDisplay.textContent = angle;
@@ -24,7 +92,6 @@ panSlider.addEventListener("input", function() {
     fetch("/pan?angle="+angle);
 
 });
-
 
 // Tilt Slider Logic
 tiltSlider.addEventListener("input", function(){
@@ -37,6 +104,7 @@ tiltSlider.addEventListener("input", function(){
 
 });
 
+//Click to move servo and target
 mapInput.addEventListener("click", function(event){
 
     const rect = mapInput.getBoundingClientRect();
@@ -78,6 +146,7 @@ function updateAngle(slider,display,value){
 
 };
 
+// Get slider angle to target x,y
 function setMarker(panAngle,tiltAngle){
 
     const rect = mapInput.getBoundingClientRect();
@@ -91,3 +160,4 @@ function setMarker(panAngle,tiltAngle){
     }
 
 };
+

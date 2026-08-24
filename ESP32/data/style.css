@@ -49,21 +49,14 @@ body{
     background-size: 50% 50%;*/
 }
 
-.grid::after{
-
-    background-image:
-        linear-gradient(to right, #b35959 1px, transparent 3px),
-        linear-gradient(to bottom, #b35959 1px, transparent 3px);
-
-    background-size: 50% 50%;
-}
-
 #camera {
 
     display: block;
     width: 100%;
     height: 100%;
     object-fit: fill;
+
+    transform: scaleY(-1);
 }
 
 .target{
@@ -74,6 +67,9 @@ body{
     border-radius: 50%;
 
     position:absolute;
+
+    left: 50.5%;
+    top: 50.5%;
 
     transform: translate(-50%, -50%);
 }
