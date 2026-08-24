@@ -211,6 +211,35 @@ void setup() {
 
   });
 
+  server.on("/stream", HTTP_GET, []{
+
+    WiFiClient client = server.client();
+
+    client.println("HTTP/1.1 200 OK");
+    client.println("Content-Type: multipart/x-mixed-replace; boundary=frame");
+    client.println();
+
+    while (client.connected()) {
+
+        camera_fb_t *fb = esp_camera_fb_get();
+
+        if (fb == NULL) {
+            break;
+        }
+
+        client.println("--frame");
+        client.println("Content-Type: image/jpeg");
+        client.println("Content-Length: " + String(fb->len));
+        client.println();
+
+        client.write(fb->buf, fb->len);
+
+        client.println();
+
+        esp_camera_fb_return(fb);
+    }
+});
+
   server.begin();
 
   /*
