@@ -47,8 +47,8 @@ mapInput.addEventListener("click", function(event){
     marker.style.left = xCoords + "px";
     marker.style.top = yCoords + "px";
 
-    panAngle = Math.round(xCoords * scaleFactor);
-    tiltAngle = Math.round(yCoords * scaleFactor);
+    panAngle = Math.round(xCoords * 180 / rect.width);
+    tiltAngle = Math.round(yCoords * 180 / rect.height);
 
     updateAngle(panSlider,panDisplay,panAngle);
     updateAngle(tiltSlider,tiltDisplay,tiltAngle);
@@ -80,12 +80,14 @@ function updateAngle(slider,display,value){
 
 function setMarker(panAngle,tiltAngle){
 
+    const rect = mapInput.getBoundingClientRect();
+
     if (panAngle !== null) {
-        marker.style.left = Math.round(panAngle / scaleFactor) + "px";
+        marker.style.left = Math.round(panAngle * rect.width / 180 ) + "px";
     }
 
     if (tiltAngle !== null) {
-        marker.style.top = Math.round(tiltAngle / scaleFactor) + "px";
+        marker.style.top = Math.round(tiltAngle * rect.height / 180 ) + "px";
     }
 
 };
