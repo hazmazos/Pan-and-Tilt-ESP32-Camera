@@ -6,7 +6,7 @@ body{
 }
 
 .container {
-    width: 500px;
+    width: 600px;
     margin: 50px auto;
     padding: 30px;
     background-color: white;
@@ -34,18 +34,29 @@ body{
 }
 
 .grid {
-    width:270px;
-    height:270px;
-    padding: 10px;
+    width: 400px;;
+    aspect-ratio: 4 / 3;
+    padding: 0px;
     border: 2px solid black;
     border-radius: 8px;
     position:relative;
+    /*overflow: hidden;
 
     background-image:
-        linear-gradient(to right, #ccc 1px, transparent 3px),
-        linear-gradient(to bottom, #ccc 1px, transparent 3px);
+        linear-gradient(to right, #b35959 1px, transparent 3px),
+        linear-gradient(to bottom, #b35959 1px, transparent 3px);
 
-    background-size: 147px 147px;
+    background-size: 50% 50%;*/
+}
+
+#camera {
+
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+
+    transform: scaleY(-1);
 }
 
 .target{
@@ -56,6 +67,9 @@ body{
     border-radius: 50%;
 
     position:absolute;
+
+    left: 50.5%;
+    top: 50.5%;
 
     transform: translate(-50%, -50%);
 }
