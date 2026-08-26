@@ -4,6 +4,8 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 
+#include <esp_camera.h>
+
 #include <ESP32Servo.h>
 
 #define PWDN -1
@@ -27,13 +29,17 @@
 #define HREF 7
 #define PCLK 13
 
-/*
+
 Servo panServo;
 Servo tiltServo; 
 
-#define panServoPin 1
-#define tiltServoPin 2
-*/
+#define panServoPin 2
+#define tiltServoPin 1
+
+int panCurrentAngle = 90;
+int tiltCurrentAngle =90;
+
+int step;
 
 const char* ssid = "";
 const char* password = "";
@@ -166,15 +172,26 @@ void setup() {
 
     String value = server.arg("angle");
   
-    int panAngle = value.toInt();
+    int panNewAngle = value.toInt();
     Serial.print("Pan angle is: " );
-    Serial.println(panAngle);
+    Serial.println(panNewAngle);
 
+    if(panCurrentAngle < panNewAngle)
+    {
+      step = 1;
+    }
 
-    //panServo.write(panAngle);
+    else{
+      step = -1;
+    }
 
-    
+    for(int panAngle = panCurrentAngle; panAngle != panNewAngle; panAngle += step ){
 
+      panServo.write(panAngle);
+      delay(10);
+    }; 
+
+    panCurrentAngle = panNewAngle;
     
     server.send(200,"text/plain","Pan angle is: "+value);
 
@@ -184,16 +201,27 @@ void setup() {
 
     String value = server.arg("angle");
   
-    int tiltAngle = value.toInt();
+    int tiltNewAngle = value.toInt();
     Serial.print("Tilt angle is: " );
-    Serial.println(tiltAngle);
+    Serial.println(tiltNewAngle);
 
+    if(tiltCurrentAngle < tiltNewAngle)
+    {
+      step = 1;
+    }
 
-    //tiltServo.write(tiltAngle);
+    else{
+      step = -1;
+    }
 
-   
+    for(int tiltAngle = tiltCurrentAngle; tiltAngle != tiltNewAngle; tiltAngle += step ){
 
+      tiltServo.write(tiltAngle);
+      delay(10);
+    };
     
+    tiltCurrentAngle = tiltNewAngle;
+
     server.send(200,"text/plain","Tilt angle is: "+value);
 
   });
@@ -245,12 +273,12 @@ void setup() {
   server.begin();
 
 
-  /*
+  
   panServo.attach(panServoPin);
   tiltServo.attach(tiltServoPin);  
-  panServo.write(90);
-  tiltServo.write(90);
-  */
+  panServo.write(panCurrentAngle);
+  tiltServo.write(tiltCurrentAngle);
+  
 
 }
   
@@ -258,4 +286,5 @@ void setup() {
 void loop() {
   server.handleClient();
 }
+
 

@@ -6,13 +6,14 @@ const tiltDisplay= document.getElementById("tiltDisplay");
 
 const mapInput = document.getElementById("gridXY");
 
-const marker = document.getElementById("marker");
+//const marker = document.getElementById("marker");
 
 const homeButton = document.getElementById("homeButton");
 
 
 const camera = document.getElementById("camera");
 
+/*
 function getFrame(){
     
     fetch("/capture")
@@ -29,6 +30,7 @@ function getFrame(){
 };
 
 getFrame();
+*/
 
 
 // Pan Slider Logic
@@ -36,7 +38,7 @@ panSlider.addEventListener("input", function(){
 
     const angle = panSlider.value;
     panDisplay.textContent = angle;
-    setMarker(angle,null);
+    //setMarker(angle,null);
 
     fetch("/pan?angle="+angle);
 
@@ -47,7 +49,7 @@ tiltSlider.addEventListener("input", function(){
     
     angle = tiltSlider.value;
     tiltDisplay.textContent = angle;
-    setMarker(null,angle);
+    //setMarker(null,angle);
 
     fetch("/tilt?angle="+angle);
 
@@ -61,8 +63,8 @@ mapInput.addEventListener("click", function(event){
     xCoords = event.clientX - rect.left;
     yCoords = event.clientY - rect.top;
 
-    marker.style.left = xCoords + "px";
-    marker.style.top = yCoords + "px";
+    //marker.style.left = xCoords + "px";
+    //marker.style.top = yCoords + "px";
 
     panAngle = Math.round(xCoords * 180 / rect.width);
     tiltAngle = Math.round(yCoords * 180 / rect.height);
@@ -82,7 +84,7 @@ homeButton.addEventListener("click", function(){
 
     updateAngle(panSlider,panDisplay,90);
     updateAngle(tiltSlider,tiltDisplay,90);
-    setMarker(90,90);
+    //setMarker(90,90);
 
     fetch("/pan?angle=90");
     fetch("/tilt?angle=90");
