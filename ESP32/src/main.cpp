@@ -37,9 +37,13 @@ Servo tiltServo;
 #define tiltServoPin 1
 
 int panCurrentAngle = 90;
-int tiltCurrentAngle =90;
+int panNewAngle;
+int panStep;
 
-int step;
+int tiltCurrentAngle =90;
+int tiltNewAngle;
+int tiltStep;
+
 
 const char* ssid = "";
 const char* password = "";
@@ -172,26 +176,11 @@ void setup() {
 
     String value = server.arg("angle");
   
-    int panNewAngle = value.toInt();
+    panNewAngle = value.toInt();
     Serial.print("Pan angle is: " );
     Serial.println(panNewAngle);
 
-    if(panCurrentAngle < panNewAngle)
-    {
-      step = 1;
-    }
-
-    else{
-      step = -1;
-    }
-
-    for(int panAngle = panCurrentAngle; panAngle != panNewAngle; panAngle += step ){
-
-      panServo.write(panAngle);
-      delay(10);
-    }; 
-
-    panCurrentAngle = panNewAngle;
+    panServo.write(panNewAngle);
     
     server.send(200,"text/plain","Pan angle is: "+value);
 
@@ -201,26 +190,11 @@ void setup() {
 
     String value = server.arg("angle");
   
-    int tiltNewAngle = value.toInt();
+    tiltNewAngle = value.toInt();
     Serial.print("Tilt angle is: " );
     Serial.println(tiltNewAngle);
 
-    if(tiltCurrentAngle < tiltNewAngle)
-    {
-      step = 1;
-    }
-
-    else{
-      step = -1;
-    }
-
-    for(int tiltAngle = tiltCurrentAngle; tiltAngle != tiltNewAngle; tiltAngle += step ){
-
-      tiltServo.write(tiltAngle);
-      delay(10);
-    };
-    
-    tiltCurrentAngle = tiltNewAngle;
+    tiltServo.write(tiltNewAngle);
 
     server.send(200,"text/plain","Tilt angle is: "+value);
 
@@ -285,6 +259,50 @@ void setup() {
 
 void loop() {
   server.handleClient();
-}
+
+  /*
+
+  if(tiltCurrentAngle < tiltNewAngle){
+
+      tiltStep = 1;
+    }
+    else{
+      tiltStep = -1;
+    }
+
+    if(panCurrentAngle < panNewAngle){
+
+      panStep = 1;
+    }
+    else{
+      panStep = -1;
+    }
+
+  while(panCurrentAngle != panNewAngle || tiltCurrentAngle != tiltNewAngle ){
+
+    if(panCurrentAngle != panNewAngle){
+
+      panCurrentAngle += panStep;
+      panServo.write(panCurrentAngle);
+    }
+
+    if(tiltCurrentAngle != tiltNewAngle){
+
+      tiltCurrentAngle += tiltStep;
+      tiltServo.write(tiltCurrentAngle);
+    }
+
+    delay(10);
+  }
+    
+    
+
+  */
+ }
+
+
+  
+  
+
 
 

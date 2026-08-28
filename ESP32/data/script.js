@@ -13,7 +13,7 @@ const homeButton = document.getElementById("homeButton");
 
 const camera = document.getElementById("camera");
 
-/*
+
 function getFrame(){
     
     fetch("/capture")
@@ -30,7 +30,7 @@ function getFrame(){
 };
 
 getFrame();
-*/
+
 
 
 // Pan Slider Logic
