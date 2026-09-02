@@ -33,16 +33,8 @@
 Servo panServo;
 Servo tiltServo; 
 
-#define panServoPin 2
-#define tiltServoPin 1
-
-int panCurrentAngle = 90;
-int panNewAngle;
-int panStep;
-
-int tiltCurrentAngle =90;
-int tiltNewAngle;
-int tiltStep;
+#define panServoPin 1
+#define tiltServoPin 2
 
 
 const char* ssid = "";
@@ -93,7 +85,7 @@ void setup() {
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
   config.frame_size = FRAMESIZE_VGA;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 7;
   config.fb_count = 1;
 
   esp_err_t err = esp_camera_init(&config);
@@ -176,11 +168,13 @@ void setup() {
 
     String value = server.arg("angle");
   
-    panNewAngle = value.toInt();
+    int panAngle = value.toInt();
     Serial.print("Pan angle is: " );
-    Serial.println(panNewAngle);
+    Serial.println(panAngle);
 
-    panServo.write(panNewAngle);
+    panServo.write(panAngle);
+    
+
     
     server.send(200,"text/plain","Pan angle is: "+value);
 
@@ -190,12 +184,14 @@ void setup() {
 
     String value = server.arg("angle");
   
-    tiltNewAngle = value.toInt();
+    int tiltAngle = value.toInt();
     Serial.print("Tilt angle is: " );
-    Serial.println(tiltNewAngle);
+    Serial.println(tiltAngle);
 
-    tiltServo.write(tiltNewAngle);
+    tiltServo.write(tiltAngle);
+   
 
+    
     server.send(200,"text/plain","Tilt angle is: "+value);
 
   });
@@ -246,63 +242,16 @@ void setup() {
 
   server.begin();
 
-
   
   panServo.attach(panServoPin);
   tiltServo.attach(tiltServoPin);  
-  panServo.write(panCurrentAngle);
-  tiltServo.write(tiltCurrentAngle);
+  panServo.write(90);
+  tiltServo.write(90);
   
-
 }
   
 
 void loop() {
   server.handleClient();
-
-  /*
-
-  if(tiltCurrentAngle < tiltNewAngle){
-
-      tiltStep = 1;
-    }
-    else{
-      tiltStep = -1;
-    }
-
-    if(panCurrentAngle < panNewAngle){
-
-      panStep = 1;
-    }
-    else{
-      panStep = -1;
-    }
-
-  while(panCurrentAngle != panNewAngle || tiltCurrentAngle != tiltNewAngle ){
-
-    if(panCurrentAngle != panNewAngle){
-
-      panCurrentAngle += panStep;
-      panServo.write(panCurrentAngle);
-    }
-
-    if(tiltCurrentAngle != tiltNewAngle){
-
-      tiltCurrentAngle += tiltStep;
-      tiltServo.write(tiltCurrentAngle);
-    }
-
-    delay(10);
-  }
-    
-    
-
-  */
- }
-
-
-  
-  
-
-
+}
 

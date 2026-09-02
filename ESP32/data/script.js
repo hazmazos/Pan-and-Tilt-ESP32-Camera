@@ -97,6 +97,8 @@ function updateAngle(slider,display,value){
 
 };
 
+/*
+
 // Get slider angle to target x,y
 function setMarker(panAngle,tiltAngle){
 
@@ -111,4 +113,4 @@ function setMarker(panAngle,tiltAngle){
     }
 
 };
-
+*/
