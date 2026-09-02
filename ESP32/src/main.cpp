@@ -6,7 +6,7 @@
 
 #include <esp_camera.h>
 
-//#include <ESP32Servo.h>
+#include <ESP32Servo.h>
 
 #define PWDN -1
 #define RESET -1
@@ -29,16 +29,16 @@
 #define HREF 7
 #define PCLK 13
 
-/*
+
 Servo panServo;
 Servo tiltServo; 
 
 #define panServoPin 1
 #define tiltServoPin 2
-*/
 
-const char* ssid = "";
-const char* password = "";
+
+const char* ssid = "VM7173670";
+const char* password = "vush6oimusedfnVf";
 
 
 WebServer server(80);
@@ -85,7 +85,7 @@ void setup() {
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
   config.frame_size = FRAMESIZE_VGA;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 7;
   config.fb_count = 1;
 
   esp_err_t err = esp_camera_init(&config);
@@ -172,7 +172,7 @@ void setup() {
     Serial.print("Pan angle is: " );
     Serial.println(panAngle);
 
-    //panServo.write(panAngle);
+    panServo.write(panAngle);
     
 
     
@@ -188,7 +188,7 @@ void setup() {
     Serial.print("Tilt angle is: " );
     Serial.println(tiltAngle);
 
-    //tiltServo.write(tiltAngle);
+    tiltServo.write(tiltAngle);
    
 
     
@@ -242,12 +242,12 @@ void setup() {
 
   server.begin();
 
-  /*
+  
   panServo.attach(panServoPin);
   tiltServo.attach(tiltServoPin);  
   panServo.write(90);
   tiltServo.write(90);
-  */
+  
 }
   
 
