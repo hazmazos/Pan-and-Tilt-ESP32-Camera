@@ -6,7 +6,7 @@
 
 #include <esp_camera.h>
 
-#include <ESP32Servo.h>
+#include <ESP32Servo.h> 
 
 #define PWDN -1
 #define RESET -1
@@ -37,8 +37,8 @@ Servo tiltServo;
 #define tiltServoPin 2
 
 
-const char* ssid = "VM7173670";
-const char* password = "vush6oimusedfnVf";
+const char* ssid = "";
+const char* password = "";
 
 
 WebServer server(80);
