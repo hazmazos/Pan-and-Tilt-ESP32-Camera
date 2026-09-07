@@ -6,9 +6,75 @@ import time
 url = "http://esp32cam.local/capture"
 
 
-    
 
+#Sparse optical flow 
+'''
+for i in range (2):
+    response = requests.get(url)
+    array = np.frombuffer(response.content, dtype=np.uint8)
+    image = cv2.imdecode(array, cv2.IMREAD_COLOR)
+
+    cv2.imwrite(f"motion{i}.jpeg",image)
+
+    cv2.imshow("motion", image)
+    cv2.waitKey(1)
+
+
+motion1 = cv2.imread("motion0.jpeg")
+motion2 = cv2.imread("motion1.jpeg")
+
+motion = [motion1, motion2]
+proc_motion = []
+
+for frame in motion:
+    proc_motion.append(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+
+image_corner = motion2.copy()
+corners = cv2.goodFeaturesToTrack(proc_motion[0], maxCorners=100, qualityLevel=0.1, minDistance=10)
+next_points, status, error  = cv2.calcOpticalFlowPyrLK(proc_motion[0], proc_motion[1], corners, None)
+
+old = corners[status == 1 ]
+new = next_points[status == 1]
+
+for old_point, new_point in zip(old,new):
+    x0,y0 = old_point.ravel()
+    x1,y1 = new_point.ravel()
+
+    cv2.circle(image_corner, (int (x1), int (y1)), 3, (0,255,0), 2)
+    cv2.line(image_corner, (int (x0), int (y0)), (int (x1), int (y1)), (0,255,0), 2)
+
+cv2.imshow("motion_tracked", image_corner)
+cv2.waitKey(0)
+'''
+
+#BACKSUB METHOD 
+'''
+backSub = cv2.createBackgroundSubtractorMOG2()
+
+while True:
+
+    response = requests.get(url)
+
+    array = np.frombuffer(response.content, dtype=np.uint8)
+    image = cv2.imdecode(array, cv2.IMREAD_COLOR)
+
+    mask = backSub.apply(image)
+
+    cv2.imshow("Foreground", mask)  
+
+    if cv2.waitKey(1) == ord("q"):
+        break
+
+cv2.destroyAllWindows()
+'''
+    
 # Works by subtracing 2 frames and marking their differences - shows whats changed which can be motion but also noise
+'''  
+response = requests.get(url)
+
+array = np.frombuffer(response.content, dtype=np.uint8)
+image = cv2.imdecode(array,cv2.IMREAD_COLOR)
+
 
 for i in range (2):
 
@@ -36,7 +102,7 @@ processed_frames = []
 for index,frame in enumerate(frames):
     grey = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
-    cv2.imshow("thresh", grey)
+    cv2.imshow("grey", grey)
     cv2.waitKey(0)
     processed_frames.append(grey)
 
@@ -68,6 +134,6 @@ for contour in contours:
 
 cv2.imshow("output",output)
 cv2.waitKey(0)
-
+'''
 
 cv2.destroyAllWindows()
