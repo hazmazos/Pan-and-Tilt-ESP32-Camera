@@ -10,84 +10,82 @@ const marker = document.getElementById("marker");
 
 const homeButton = document.getElementById("homeButton");
 
+
 const camera = document.getElementById("camera");
 
 let frameTimes = [];
+let FPSs = [];
 let jpegSizes = [];
 
-let squaredFrameTimeDeviations = [];
-let squaredJpegDeviations = [];
+let FPSs_dev = [];
+let jpegSizes_dev = [];
 
-
-let frameCount = 0;
-const endFrame = 50;
+let currentFrame = 0;
+const frameLimit = 51;
 
 function getFrame(){
-    
-    const start = performance.now();
 
+    const start = performance.now();
+    
     fetch("/capture")
     .then(respone => respone.blob())
     .then( blob => {
-
-        const end = performance.now();
-
-        const frameTime =  end - start;
-        frameTimes.push(frameTime);
-        jpegSizes.push(blob.size);
-
-        frameCount++;
-
-        const totalFrameTimes = frameTimes.reduce((total,value) => total + value, 0);
-        
-        const totalJpegSizes = jpegSizes.reduce((total,value) => total + value, 0);
         
         const imageURL = URL.createObjectURL(blob);
         camera.src = imageURL;
 
-        if(frameCount < endFrame){
+        const end = performance.now();
+
+        const frameTime = end - start;
+        const FPS = 1000/frameTime;
+        const jpegSize = blob.size
+
+        frameTimes.push(frameTime);
+        FPSs.push(FPS);
+        jpegSizes.push(jpegSize);
+
+        currentFrame++;
+
+        
+        if(currentFrame <= frameLimit){
 
             getFrame();
         }
 
         else{
-            const averageFrameTimes = totalFrameTimes / frameTimes.length;
-            const averageJpegSizes = totalJpegSizes / jpegSizes.length;
+            
+            const avgFrameTime = frameTimes.reduce((total, value) => total + value, 0) / frameTimes.length
+            const avgFPS = FPSs.reduce((total, value) => total + value, 0) / FPSs.length
+            const avgJpegSize = jpegSizes.reduce((total, value) => total + value, 0) / jpegSizes.length 
+            
+            console.log("average frame time is: ", avgFrameTime, "ms");
+            console.log("average fps is: ", avgFPS);
+            console.log("average jpeg size is: ", avgJpegSize);
 
-            console.log("Average FPS is: ", averageFrameTimes);
-            console.log("Average jpeg size is: ", averageJpegSizes);
+            frameTimeVariance = frameTimes.reduce((total, value) => total + (value - avgFrameTime) **2, 0) / frameTimes.length;
+            fpsVariance = FPSs.reduce((total, value) => total + (value - avgFPS) **2, 0) / FPSs.length;
+            jpegSizeVariance = jpegSizes.reduce((total, value) => total + (value - avgJpegSize)**2, 0) / jpegSizes.length;
 
-            for(let i = 0; i < endFrame; i++){
+            console.log("frame time stdv is: ", Math.sqrt(frameTimeVariance));
+            console.log("fps stdv is: ", Math.sqrt(fpsVariance));
+            console.log("jpeg size stdv is: ", Math.sqrt(jpegSizeVariance));
 
-                const squaredFrameTimeError =(frameTimes[i] - averageFrameTimes)**2;
-                squaredFrameTimeDeviations.push(squaredFrameTimeError);
-
-                const squaredJpegError =(jpegSizes[i] - averageJpegSizes)**2;
-                squaredJpegDeviations.push(squaredJpegError);
-                
-            }
-
-            const averageFrameTimeVariance = squaredFrameTimeDeviations.reduce((total,value) => total + value,0)/squaredFrameTimeDeviations.length;
-            const jpegFrameVariance = squaredJpegDeviations.reduce((total,value) => total + value,0)/squaredJpegDeviations.length;
-
-            console.log("Frame time deviation is: ", averageFrameTimeVariance**0.5);
-            console.log("Jpeg deviation size is: ", jpegFrameVariance**0.5);
-
+    
             
         }
-        
     })
 
 };
 
 getFrame();
 
+
 // Pan Slider Logic
 panSlider.addEventListener("input", function(){
 
     const angle = panSlider.value;
     panDisplay.textContent = angle;
-    setMarker(angle,null);
+    //setMarker(angle,null);
 
     fetch("/pan?angle="+angle);
 
@@ -98,7 +96,7 @@ tiltSlider.addEventListener("input", function(){
     
     angle = tiltSlider.value;
     tiltDisplay.textContent = angle;
-    setMarker(null,angle);
+    //setMarker(null,angle);
 
     fetch("/tilt?angle="+angle);
 
@@ -112,8 +110,8 @@ mapInput.addEventListener("click", function(event){
     xCoords = event.clientX - rect.left;
     yCoords = event.clientY - rect.top;
 
-    marker.style.left = xCoords + "px";
-    marker.style.top = yCoords + "px";
+    //marker.style.left = xCoords + "px";
+    //marker.style.top = yCoords + "px";
 
     panAngle = Math.round(xCoords * 180 / rect.width);
     tiltAngle = Math.round(yCoords * 180 / rect.height);
@@ -133,7 +131,7 @@ homeButton.addEventListener("click", function(){
 
     updateAngle(panSlider,panDisplay,90);
     updateAngle(tiltSlider,tiltDisplay,90);
-    setMarker(90,90);
+    //setMarker(90,90);
 
     fetch("/pan?angle=90");
     fetch("/tilt?angle=90");
@@ -146,6 +144,8 @@ function updateAngle(slider,display,value){
 
 };
 
+
+/*
 // Get slider angle to target x,y
 function setMarker(panAngle,tiltAngle){
 
@@ -160,4 +160,4 @@ function setMarker(panAngle,tiltAngle){
     }
 
 };
-
+*/

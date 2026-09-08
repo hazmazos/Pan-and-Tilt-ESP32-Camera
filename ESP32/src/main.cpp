@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <LittleFS.h>
 #include <WiFi.h>
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
 
 #include <esp_camera.h>
 
-//#include <ESP32Servo.h>
+#include <ESP32Servo.h> 
 
 #define PWDN -1
 #define RESET -1
@@ -29,19 +29,60 @@
 #define HREF 7
 #define PCLK 13
 
-/*
+
 Servo panServo;
 Servo tiltServo; 
 
 #define panServoPin 1
 #define tiltServoPin 2
-*/
 
+
+// Look into NETWIZARD 
 const char* ssid = "";
 const char* password = "";
 
+AsyncWebServer server(80);
 
-WebServer server(80);
+WiFiClient streamClient;
+bool streaming = false;
+
+TaskHandle_t streamTaskHandle;
+
+void streamTask(void *param) {
+
+  Serial.println("Stream task started");
+
+  while (true) {
+
+    if (streaming && streamClient.connected()) {
+      
+      camera_fb_t *fb = esp_camera_fb_get();
+
+      if(fb != NULL) {
+
+
+        Serial.println("Streaming....");
+        streamClient.println("--frame");
+        streamClient.println("Content-Type: image/jpeg");
+        streamClient.println("Content-Length: " + String(fb->len));
+        streamClient.println();
+
+        streamClient.write(fb->buf, fb->len);
+
+        streamClient.println();
+
+        esp_camera_fb_return(fb);
+      }
+    }
+
+    else {
+
+      streaming = false;
+    }
+
+    vTaskDelay(1);
+  }
+}
 
 void setup() {
 
@@ -85,7 +126,7 @@ void setup() {
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
   config.frame_size = FRAMESIZE_VGA;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 9;
   config.fb_count = 1;
 
   esp_err_t err = esp_camera_init(&config);
@@ -97,7 +138,7 @@ void setup() {
 
   Serial.println("Camera set up");
   
-  //Web server set up
+  
   if(!LittleFS.begin()){
     Serial.println("Little FS mount failed");
     return;
@@ -122,107 +163,118 @@ void setup() {
     Serial.println("Open http://esp32cam.local");
   }
 
-  server.on("/", HTTP_GET, [](){
-
-    File file = LittleFS.open("/index.html", "r");
-
-    if(!file){
-      Serial.println("index file not found");
-      return;
-    }
-    server.streamFile(file,"text/html");
-    file.close();
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     
+    request->send(LittleFS, "/index.html", "text/html");    
   });
 
-  server.on("/script.js", HTTP_GET, []{
+  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
 
-    File file = LittleFS.open("/script.js", "r");
-
-    if(!file){
-      Serial.println("script file not found");
-      return;
-    }
-    server.streamFile(file,"text/javascript");
-    file.close();
-
+    request->send(LittleFS, "/script.js", "text/javascript");
   });
 
-  server.on("/style.css", HTTP_GET, []{
-    
-    File file = LittleFS.open("/style.css","r");
-
-    if(!file)
-    {
-      Serial.println("style file not found");
-      return;      
-    }
-
-    server.streamFile(file,"text/css");
-    file.close();
-
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+  
+    request->send(LittleFS, "/style.css", "text/css");
 
   });
 
-  server.on("/pan", HTTP_GET, [](){
+  server.on("/pan", HTTP_GET, [](AsyncWebServerRequest *request){
 
-    String value = server.arg("angle");
+    uint32_t startTime = micros();
+
+    String value = request->arg("angle");
   
     int panAngle = value.toInt();
     Serial.print("Pan angle is: " );
     Serial.println(panAngle);
 
-    //panServo.write(panAngle);
+    panServo.write(panAngle);
     
 
     
-    server.send(200,"text/plain","Pan angle is: "+value);
+    request->send(200,"text/plain","Pan angle is: "+value);
+
+    uint32_t endTime = micros();
+
+    Serial.println("Time difference for pan is: " + String (endTime - startTime));
 
   });
 
-  server.on("/tilt", HTTP_GET, [](){
+  server.on("/tilt", HTTP_GET, [](AsyncWebServerRequest *request){
 
-    String value = server.arg("angle");
+    uint32_t startTime = micros();
+
+    String value = request->arg("angle");
   
     int tiltAngle = value.toInt();
     Serial.print("Tilt angle is: " );
     Serial.println(tiltAngle);
 
-    //tiltServo.write(tiltAngle);
+    tiltServo.write(tiltAngle);
    
 
     
-    server.send(200,"text/plain","Tilt angle is: "+value);
+    request->send(200,"text/plain","Tilt angle is: "+value);
+
+    uint32_t endTime = micros();
+
+    Serial.println("Time differnce for tilt is: " + String (endTime - startTime));
 
   });
   
-  server.on("/capture", HTTP_GET, []{
+  server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request){
+
+    uint32_t startTime = micros();
 
     camera_fb_t *fb = esp_camera_fb_get();
 
+    uint32_t endTime = micros();
+
     if( fb == NULL){
-      server.send(500, "text/plain", "Camera capture failed");
+      request->send(500, "text/plain", "Camera capture failed");
       return;
     }
 
-    server.send_P(200, "image/jpeg", (const char *)fb->buf, fb->len);
-    
+    uint32_t sendStart = micros();
+
+    AsyncWebServerResponse *response = request->beginResponse(200, "image/jpeg", fb->buf, fb->len);
+    request->send(response);
     esp_camera_fb_return(fb);
+
+    uint32_t endStart = micros();
+
+    Serial.println("Time taken for camera capture is: " + String (endTime - startTime));
+    Serial.println("Time taken for image queue is: " + String (endStart - sendStart));
+    Serial.println("Jpeg size is: " + String (fb->len));
 
   });
 
+ 
+  server.on("/stream", HTTP_GET, [](AsyncWebServerRequest *request){
+
+    Serial.println("HANDLER CALLED");
+
+    AsyncWebServerResponse *response = request->beginResponseStream("multipart/x-mixed-replace; boundary=frame");
+
+    request->send(response);
+    
+    streaming = true;
+});
+
   server.begin();
 
-  /*
+  xTaskCreate(streamTask, "Stream Task", 8192, NULL, 1, &streamTaskHandle);
+
+  
   panServo.attach(panServoPin);
   tiltServo.attach(tiltServoPin);  
   panServo.write(90);
   tiltServo.write(90);
-  */
+  
 }
   
 
 void loop() {
-  server.handleClient();
 }
 
