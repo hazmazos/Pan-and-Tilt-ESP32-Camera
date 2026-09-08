@@ -182,6 +182,8 @@ void setup() {
 
   server.on("/pan", HTTP_GET, [](AsyncWebServerRequest *request){
 
+    uint32_t startTime = micros();
+
     String value = request->arg("angle");
   
     int panAngle = value.toInt();
@@ -194,9 +196,15 @@ void setup() {
     
     request->send(200,"text/plain","Pan angle is: "+value);
 
+    uint32_t endTime = micros();
+
+    Serial.println("Time difference for pan is: " + String (endTime - startTime));
+
   });
 
   server.on("/tilt", HTTP_GET, [](AsyncWebServerRequest *request){
+
+    uint32_t startTime = micros();
 
     String value = request->arg("angle");
   
@@ -210,20 +218,36 @@ void setup() {
     
     request->send(200,"text/plain","Tilt angle is: "+value);
 
+    uint32_t endTime = micros();
+
+    Serial.println("Time differnce for tilt is: " + String (endTime - startTime));
+
   });
   
   server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request){
 
+    uint32_t startTime = micros();
+
     camera_fb_t *fb = esp_camera_fb_get();
+
+    uint32_t endTime = micros();
 
     if( fb == NULL){
       request->send(500, "text/plain", "Camera capture failed");
       return;
     }
 
+    uint32_t sendStart = micros();
+
     AsyncWebServerResponse *response = request->beginResponse(200, "image/jpeg", fb->buf, fb->len);
     request->send(response);
     esp_camera_fb_return(fb);
+
+    uint32_t endStart = micros();
+
+    Serial.println("Time taken for camera capture is: " + String (endTime - startTime));
+    Serial.println("Time taken for image queue is: " + String (endStart - sendStart));
+    Serial.println("Jpeg size is: " + String (fb->len));
 
   });
 

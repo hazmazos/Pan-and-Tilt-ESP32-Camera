@@ -12,8 +12,20 @@ const homeButton = document.getElementById("homeButton");
 
 
 const camera = document.getElementById("camera");
- /*
+
+let frameTimes = [];
+let FPSs = [];
+let jpegSizes = [];
+
+let FPSs_dev = [];
+let jpegSizes_dev = [];
+
+let currentFrame = 0;
+const frameLimit = 50;
+
 function getFrame(){
+
+    const start = performance.now();
     
     fetch("/capture")
     .then(respone => respone.blob())
@@ -21,16 +33,40 @@ function getFrame(){
         
         const imageURL = URL.createObjectURL(blob);
         camera.src = imageURL;
+
+        const end = performance.now();
+
+        const frameTime = end - start;
+        const FPS = 1000/frameTime;
+        const jpegSize = blob.size
+
+        frameTimes.push(frameTime);
+        FPSs.push(FPS);
+        jpegSizes.push(jpegSize);
+
         
-        getFrame();
-        
+        if(currentFrame <= frameLimit){
+
+            getFrame();
+        }
+
+        else{
+            
+            const totalFrameTime = frameTimes.reduce(total, value => total + value)
+            const totalFPS = FPSs.reduce(total, value => total + value)
+            const totalJpegSize = jpegSizes.reduce(total, value => total + value) 
+
+
+
+
+        }
     })
 
 };
 
 getFrame();
 
-*/
+
 // Pan Slider Logic
 panSlider.addEventListener("input", function(){
 
