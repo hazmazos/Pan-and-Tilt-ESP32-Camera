@@ -21,7 +21,7 @@ let FPSs_dev = [];
 let jpegSizes_dev = [];
 
 let currentFrame = 0;
-const frameLimit = 50;
+const frameLimit = 51;
 
 function getFrame(){
 
@@ -44,6 +44,8 @@ function getFrame(){
         FPSs.push(FPS);
         jpegSizes.push(jpegSize);
 
+        currentFrame++;
+
         
         if(currentFrame <= frameLimit){
 
@@ -52,13 +54,24 @@ function getFrame(){
 
         else{
             
-            const totalFrameTime = frameTimes.reduce(total, value => total + value)
-            const totalFPS = FPSs.reduce(total, value => total + value)
-            const totalJpegSize = jpegSizes.reduce(total, value => total + value) 
+            const avgFrameTime = frameTimes.reduce((total, value) => total + value, 0) / frameTimes.length
+            const avgFPS = FPSs.reduce((total, value) => total + value, 0) / FPSs.length
+            const avgJpegSize = jpegSizes.reduce((total, value) => total + value, 0) / jpegSizes.length 
+            
+            console.log("average frame time is: ", avgFrameTime, "ms");
+            console.log("average fps is: ", avgFPS);
+            console.log("average jpeg size is: ", avgJpegSize);
 
+            frameTimeVariance = frameTimes.reduce((total, value) => total + (value - avgFrameTime) **2, 0) / frameTimes.length;
+            fpsVariance = FPSs.reduce((total, value) => total + (value - avgFPS) **2, 0) / FPSs.length;
+            jpegSizeVariance = jpegSizes.reduce((total, value) => total + (value - avgJpegSize)**2, 0) / jpegSizes.length;
 
+            console.log("frame time stdv is: ", Math.sqrt(frameTimeVariance));
+            console.log("fps stdv is: ", Math.sqrt(fpsVariance));
+            console.log("jpeg size stdv is: ", Math.sqrt(jpegSizeVariance));
 
-
+    
+            
         }
     })
 
