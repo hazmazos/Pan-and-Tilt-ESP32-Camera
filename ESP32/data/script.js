@@ -77,7 +77,7 @@ function getFrame(){
 
 };
 
-getFrame();
+//getFrame();
 
 
 // Pan Slider Logic
