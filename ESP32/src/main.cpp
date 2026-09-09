@@ -43,46 +43,10 @@ const char* password = "";
 
 AsyncWebServer server(80);
 
-WiFiClient streamClient;
-bool streaming = false;
-
-TaskHandle_t streamTaskHandle;
-
-void streamTask(void *param) {
-
-  Serial.println("Stream task started");
-
-  while (true) {
-
-    if (streaming && streamClient.connected()) {
-      
-      camera_fb_t *fb = esp_camera_fb_get();
-
-      if(fb != NULL) {
-
-
-        Serial.println("Streaming....");
-        streamClient.println("--frame");
-        streamClient.println("Content-Type: image/jpeg");
-        streamClient.println("Content-Length: " + String(fb->len));
-        streamClient.println();
-
-        streamClient.write(fb->buf, fb->len);
-
-        streamClient.println();
-
-        esp_camera_fb_return(fb);
-      }
-    }
-
-    else {
-
-      streaming = false;
-    }
-
-    vTaskDelay(1);
-  }
-}
+camera_fb_t *streamFrame = nullptr;
+size_t streamPosition = 0;
+String streamHeader;
+bool streamFrameEnd = false;
 
 void setup() {
 
@@ -191,7 +155,6 @@ void setup() {
 
     panServo.write(panAngle);
     
-
     
     request->send(200,"text/plain","Pan angle is: "+value);
 
@@ -255,18 +218,90 @@ void setup() {
 
     Serial.println("HANDLER CALLED");
 
-    AsyncWebServerResponse *response = request->beginResponseStream("multipart/x-mixed-replace; boundary=frame");
+    AsyncWebServerResponse *response = request->beginChunkedResponse(
+      "multipart/x-mixed-replace; boundary=frame",
+      [](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
 
-    request->send(response);
-    
-    streaming = true;
+        if(streamFrameEnd){
+          
+          if(maxLen < 2){
+            return 0;
+          }
+
+          buffer[0] = 'r';
+          buffer[1] = 'n';
+
+          esp_camera_fb_return(streamFrame);
+          streamFrame = nullptr;
+
+          streamPosition = 0;
+          streamHeader = "";
+          streamFrameEnd = false;
+
+          return 2;
+        }
+
+        // get new frame when needed
+        if(streamFrame == nullptr){
+          
+          streamFrame = esp_camera_fb_get();
+
+          
+          if(streamFrame == nullptr){
+            
+            Serial.println("Frame capture failed");
+            return 0;
+          }
+          
+          streamPosition = 0;
+
+          streamHeader =
+          "--frame\r\n"
+          "Content-type: image/jpeg\r\n"
+          "Content-length: " + String(streamFrame->len) + "\r\n\r\n";
+          Serial.println("Frame capture worked");
+        }
+
+        size_t bytesToSend = 0;
+
+        // check if we sent all the header yet or stil have to
+        if(streamPosition < streamHeader.length()){
+
+          size_t headerRemaining = streamHeader.length() - streamPosition;
+          //cant send anymore at a time
+          bytesToSend = min(headerRemaining, maxLen);
+          // send total in max parts possible
+          memcpy(buffer, streamHeader.c_str() + streamPosition, bytesToSend);
+          streamPosition += bytesToSend;
+          
+        }
+
+        // header sent now jpeg
+        else{
+
+          size_t jpegPosition = streamPosition - streamHeader.length();
+          size_t jpegRemaining = streamFrame->len - jpegPosition;
+
+          bytesToSend = min(jpegRemaining, maxLen);
+
+          memcpy(buffer, streamFrame->buf + jpegPosition, bytesToSend);
+          streamPosition += bytesToSend;
+
+          if(jpegPosition + bytesToSend >= streamFrame->len){
+
+            streamFrameEnd = true;
+          }
+        }
+        
+        Serial.println("Bytes being sent it" + String (bytesToSend));
+        return bytesToSend;        
+      });
+
+      request->send(response);
 });
 
   server.begin();
 
-  xTaskCreate(streamTask, "Stream Task", 8192, NULL, 1, &streamTaskHandle);
-
-  
   panServo.attach(panServoPin);
   tiltServo.attach(tiltServoPin);  
   panServo.write(90);
