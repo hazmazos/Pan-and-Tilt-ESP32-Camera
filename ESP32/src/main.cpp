@@ -41,17 +41,10 @@ const char* ssid = "";
 const char* password = "";
 AsyncWebServer server(80);
 
-<<<<<<< HEAD
 camera_fb_t *streamFrame = nullptr;
 size_t streamPosition = 0;
 String streamHeader;
 bool streamFrameEnd = false;
-=======
-  camera_fb_t *streamFrame = nullptr;
-  size_t streamPosition = 0;
-  String streamHeader;
-  bool streamFrameEnd = false;
->>>>>>> main
 
 void setup() {
 
