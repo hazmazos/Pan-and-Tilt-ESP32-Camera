@@ -6,11 +6,7 @@
 
 #include <esp_camera.h>
 
-<<<<<<< HEAD
-#include <ESP32Servo.h>
-=======
 #include <ESP32Servo.h> 
->>>>>>> RTOS
 
 #define PWDN -1
 #define RESET -1
@@ -39,16 +35,10 @@ Servo tiltServo;
 
 #define panServoPin 1
 #define tiltServoPin 2
-<<<<<<< HEAD
-
-=======
->>>>>>> RTOS
-
 
 // Look into NETWIZARD 
 const char* ssid = "";
 const char* password = "";
-
 AsyncWebServer server(80);
 
   camera_fb_t *streamFrame = nullptr;
@@ -98,11 +88,7 @@ void setup() {
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
   config.frame_size = FRAMESIZE_VGA;
-<<<<<<< HEAD
-  config.jpeg_quality = 7;
-=======
   config.jpeg_quality = 9;
->>>>>>> RTOS
   config.fb_count = 1;
 
   esp_err_t err = esp_camera_init(&config);
@@ -280,10 +266,6 @@ void setup() {
 
   server.begin();
 
-<<<<<<< HEAD
-  
-=======
->>>>>>> RTOS
   panServo.attach(panServoPin);
   tiltServo.attach(tiltServoPin);  
   panServo.write(90);

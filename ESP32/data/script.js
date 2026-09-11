@@ -14,9 +14,6 @@ const homeButton = document.getElementById("homeButton");
 const camera = document.getElementById("camera");
 
 
-<<<<<<< HEAD
-function getFrame(){
-=======
 let currentFrame = 0;
 const testEnd = 100;
 
@@ -170,7 +167,6 @@ let captureFrameTimes = [];
 function getCapture(){
 
     const start = performance.now();
->>>>>>> RTOS
     
     fetch("/capture")
     .then(respone => respone.blob())
@@ -201,15 +197,10 @@ function getCapture(){
 };
 
 //getCapture();
-getStream();
+//getStream();
 
 
-<<<<<<< HEAD
-
-// Pan Slider Logic
-=======
 //Pan Slider Logic
->>>>>>> RTOS
 panSlider.addEventListener("input", function(){
 
     const angle = panSlider.value;
@@ -273,13 +264,8 @@ function updateAngle(slider,display,value){
 
 };
 
-<<<<<<< HEAD
-/*
-
-=======
 
 /*
->>>>>>> RTOS
 // Get slider angle to target x,y
 function setMarker(panAngle,tiltAngle){
 
