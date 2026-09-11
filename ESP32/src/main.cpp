@@ -120,9 +120,6 @@ void setup() {
 
   Serial.println("WiFi connected");
 
-  Serial.print("Ip address:");
-  Serial.println(WiFi.localIP());
-
   if(MDNS.begin("esp32cam")){
     Serial.println("Open http://esp32cam.local");
   }
@@ -216,7 +213,7 @@ void setup() {
  
   server.on("/stream", HTTP_GET, [](AsyncWebServerRequest *request){
 
-    Serial.println("HANDLER CALLED");
+    //Serial.println("HANDLER CALLED");
 
     AsyncWebServerResponse *response = request->beginChunkedResponse(
       "multipart/x-mixed-replace; boundary=frame",
@@ -228,8 +225,8 @@ void setup() {
             return 0;
           }
 
-          buffer[0] = 'r';
-          buffer[1] = 'n';
+          buffer[0] = '\r';
+          buffer[1] = '\n';
 
           esp_camera_fb_return(streamFrame);
           streamFrame = nullptr;
@@ -249,7 +246,7 @@ void setup() {
           
           if(streamFrame == nullptr){
             
-            Serial.println("Frame capture failed");
+            //Serial.println("Frame capture failed");
             return 0;
           }
           
@@ -259,7 +256,7 @@ void setup() {
           "--frame\r\n"
           "Content-type: image/jpeg\r\n"
           "Content-length: " + String(streamFrame->len) + "\r\n\r\n";
-          Serial.println("Frame capture worked");
+          //Serial.println("Frame capture worked");
         }
 
         size_t bytesToSend = 0;
@@ -293,7 +290,6 @@ void setup() {
           }
         }
         
-        Serial.println("Bytes being sent it" + String (bytesToSend));
         return bytesToSend;        
       });
 
