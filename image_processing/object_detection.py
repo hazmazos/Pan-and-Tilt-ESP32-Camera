@@ -9,6 +9,7 @@ model = YOLO("yolo26n.pt")
 
 url = "http://esp32cam.local/stream"
 
+##LOOK INTO VS CODE TASK TO LAUNCH BOTH AT SAME TIME 
 while True:
     try:
         response = requests.get(url, stream=True, timeout=2)
