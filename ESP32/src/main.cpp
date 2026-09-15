@@ -117,6 +117,7 @@ void setup() {
   }
 
   Serial.println("WiFi connected");
+  Serial.println(WiFi.localIP());
 
   if(MDNS.begin("esp32cam")){
     Serial.println("Open http://esp32cam.local");
