@@ -5,19 +5,14 @@ import http.client
 import threading 
 import time
 
+
 pan_angle = 90
 tilt_angle = 90
 
-ESP32_IP = ""
-conn = http.client.HTTPConnection(ESP32_IP,80, timeout=1)
-
-url = "http://esp32cam.local/stream"
-
-stop_event = threading.Event()
-
+def getPixel(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print(f"hsv value is: {param[y,x]}")
 def servo_control():
-    
-
     while not stop_event.is_set():
 
         conn.request("GET", f"/pan?angle={pan_angle}")
@@ -30,12 +25,15 @@ def servo_control():
 
         time.sleep(0.1)
 
+url = "http://esp32cam.local/stream"
+
+ESP32_IP = ""
+conn = http.client.HTTPConnection(ESP32_IP,80, timeout=1)
+
+stop_event = threading.Event()
 servo_thread = threading.Thread(target=servo_control,daemon=False)
 servo_thread.start()
 
-def getPixel(event, x, y, flags, param):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        print(f"hsv value is: {param[y,x]}")
 
 while True:
     try:
@@ -48,8 +46,8 @@ while True:
     except requests.exceptions.RequestException:
         print("Waiting for ESP32")
 
-while True:
 
+while True:
     while b"\xff\xd8" not in buffer:
         buffer += next(chunk)
     soi = buffer.find(b"\xff\xd8")
@@ -85,18 +83,17 @@ while True:
 
     V1 = 90
     V2 = 230
-
     lower = np.array([H1,S1,V1])
     upper = np.array([H2,S2,V2])
-
-    
     mask = cv2.inRange(hsv, lower, upper)
     #cv2.imshow("Mask", mask)
 
     area_thesh = 1000
     contours, hiearchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
+
         if cv2.contourArea(largest_contour) >= area_thesh:     
             cv2.drawContours(image, [largest_contour], -1, (0,0,255), 2)
 
@@ -134,18 +131,6 @@ while True:
 
                     tilt_angle = max(0, min(180, tilt_angle))
 
-
-            '''
-            
-            x = np.array([[cx],[cy],[0],[0]], dtype=float)
-            P = None
-
-            A = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], dtype=float)
-            R = None
-
-            H = np.array([[1,0,0,0],[0,1,0,0]], dtype=float)
-            Q = None
-            '''
     cv2.imshow("Stream", image)
     if cv2.waitKey(1) == ord("q"):
         stop_event.set()
