@@ -164,6 +164,28 @@ void setup() {
    
     request->send(200,"text/plain","Tilt angle is: "+value);
   });
+
+  server.on("/servo", HTTP_GET, [](AsyncWebServerRequest *request){
+
+    if(request->hasParam("pan") && request->hasParam("tilt")){
+
+      int panValue = request->getParam("pan")->value().toInt();
+      int tiltValue = request->getParam("tilt")->value().toInt();
+
+      Serial.print("Pan angle is: ");
+      Serial.println(panValue);
+
+      Serial.print("Tilt angle is: ");
+      Serial.println(tiltValue);
+
+      panServo.write(panValue);
+      tiltServo.write(tiltValue);
+
+      request->send(200,"text/plain","Angles received");
+
+    }
+
+  });
   
   server.on("/capture", HTTP_GET, [](AsyncWebServerRequest *request){
 

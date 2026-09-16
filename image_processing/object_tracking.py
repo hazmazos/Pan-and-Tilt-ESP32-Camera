@@ -6,8 +6,7 @@ import threading
 import time
 
 
-pan_angle = 90
-tilt_angle = 90
+
 
 def getPixel(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
@@ -15,19 +14,33 @@ def getPixel(event, x, y, flags, param):
 def servo_control():
     while not stop_event.is_set():
 
-        conn.request("GET", f"/pan?angle={pan_angle}")
+        conn.request("GET", f"/servo?pan={pan_angle}&tilt={tilt_angle}")
         response = conn.getresponse()
         response.read()
 
-        conn.request("GET", f"/tilt?angle={tilt_angle}")
-        response = conn.getresponse()
-        response.read()
-
-        time.sleep(0.1)
+        time.sleep(0.05)
 
 url = "http://esp32cam.local/stream"
-
 ESP32_IP = ""
+
+pan_angle = 90
+tilt_angle = 90
+
+
+x = None
+P = np.array([[2,1,0.75,0.5],[1,2,0.5,0.75],[0.75,0.5,2,0.5],[0.5,0.75,0.5,2]], dtype=np.float32)
+
+A = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], dtype=np.float32)
+Q = np.array([[4,1,0,0],[1,4,0,0],[0,0,5,1],[0,0,1,5]], dtype=np.float32)
+
+H = np.array([[1,0,0,0],[0,1,0,0]], dtype=np.float32)
+R = np.array([[4,1],[1,4]], dtype=np.float32)
+ 
+
+initialised_state = False
+ball_found = False
+
+
 conn = http.client.HTTPConnection(ESP32_IP,80, timeout=1)
 
 stop_event = threading.Event()
@@ -48,6 +61,7 @@ while True:
 
 
 while True:
+
     while b"\xff\xd8" not in buffer:
         buffer += next(chunk)
     soi = buffer.find(b"\xff\xd8")
@@ -94,7 +108,10 @@ while True:
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
 
+        ## ball found
         if cv2.contourArea(largest_contour) >= area_thesh:     
+
+            ball_found = True
             cv2.drawContours(image, [largest_contour], -1, (0,0,255), 2)
 
             M = cv2.moments(largest_contour)
@@ -102,35 +119,48 @@ while True:
                 cx = M["m10"]/M["m00"]
                 cy = M["m01"]/M["m00"]
                 cv2.circle(image, (int (cx), int (cy)), 3, (0,0,255), 2)
-                
+
+                # ball found for first time
+                if not initialised_state:
+                    x = np.array([[cx],[cy],[0],[0]], dtype=np.float32)
+                    initialised_state = True
+
+                x_pred = A @ x
+                P_pred = A @ P @ A.T + Q
+
+                z = np.array([[cx],[cy]], dtype=np.float32)
+                y = z - H @ x_pred
+
+                K = P_pred @ H.T @ np.linalg.inv(H @ P_pred @ H.T + R)
+                x = x_pred + K @ y
+
+                P = (np.eye(4) - K@H) @ P_pred
 
                 height, width = image.shape[:2]
                 centre_x = int (width/2)
                 centre_y = int (height/2)
 
-                err_x = centre_x - cx
-                err_y = centre_y - cy
+                err_x = centre_x - x[0,0]
+                err_y = centre_y - x[1,0]
 
-                inside = cv2.pointPolygonTest(largest_contour, (centre_x, centre_y), False)
-                if inside >= 0:
-                    print("centred")
+                pan_step =int (np.clip(0.1 * err_x, -3, 3))
+                tilt_step =int (np.clip(0.1 * err_y, -3, 3))
 
-                else:
-                    print("not centred")
-                    if err_x > 0:
-                        pan_angle +=1
-                    elif err_x < 0:
-                        pan_angle -=1
+                pan_angle += pan_step
 
-                    pan_angle = max(0, min(180, pan_angle))
+                print(pan_angle)
+                
 
-                    if err_y > 0:
-                        tilt_angle -=1
-                    elif err_y < 0:
-                        tilt_angle +=1
+        # we diddn't find the ball
+        else:
+            ball_found = False
+            # but we fouind it before so now lost
 
-                    tilt_angle = max(0, min(180, tilt_angle))
+            if initialised_state:
+                pred_limit = 20
+                ## predict up to 20 frames then what??
 
+                # now need to not measure but just predict
     cv2.imshow("Stream", image)
     if cv2.waitKey(1) == ord("q"):
         stop_event.set()
