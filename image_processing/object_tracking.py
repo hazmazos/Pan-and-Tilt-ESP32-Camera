@@ -4,6 +4,7 @@ import cv2
 import http.client
 import threading 
 import time
+from flask import Flask, Response
 
 
 pan_angle = 90
@@ -15,17 +16,15 @@ def getPixel(event, x, y, flags, param):
 def servo_control():
     while not stop_event.is_set():
 
-        conn.request("GET", f"/pan?angle={pan_angle}")
+        conn.request("GET", f"/servo?pan={pan_angle}&tilt={tilt_angle}")
         response = conn.getresponse()
         response.read()
 
-        conn.request("GET", f"/tilt?angle={tilt_angle}")
-        response = conn.getresponse()
-        response.read()
+        time.sleep(0.05)
 
-        time.sleep(0.1)
 
 url = "http://esp32cam.local/stream"
+
 
 ESP32_IP = ""
 conn = http.client.HTTPConnection(ESP32_IP,80, timeout=1)
@@ -33,6 +32,71 @@ conn = http.client.HTTPConnection(ESP32_IP,80, timeout=1)
 stop_event = threading.Event()
 servo_thread = threading.Thread(target=servo_control,daemon=False)
 servo_thread.start()
+
+app = Flask(__name__)
+latest_frame = None
+new_frame = False
+frame_condition = threading.Condition()
+
+def generate():
+
+    global latest_frame, new_frame
+    
+    
+    while True:
+        with frame_condition:
+            while not new_frame:
+                frame_condition.wait()
+
+            frame = latest_frame
+            new_frame = False            
+            yield(
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n"
+                b"Content-Length: " + str(len(frame)).encode() + b"\r\n\r\n" +
+                latest_frame +
+                b"\r\n"
+            )
+
+@app.route("/stream")
+def stream():
+    return Response(generate(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+threading.Thread(target=lambda: app.run(host="0.0.0.0", port=8000, threaded=True),daemon=True).start()
+
+
+kalman = cv2.KalmanFilter(4, 2)
+
+kalman.transitionMatrix = np.array([
+    [1, 0, 1, 0],
+    [0, 1, 0, 1],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]
+], dtype=np.float32)
+
+kalman.measurementMatrix = np.array([
+    [1, 0, 0, 0],
+    [0, 1, 0, 0]
+], dtype=np.float32)
+
+kalman.processNoiseCov = np.array([
+    [4, 1, 0, 0],
+    [1, 4, 0, 0],
+    [0, 0, 5, 1],
+    [0, 0, 1, 5]
+], dtype=np.float32)
+
+kalman.measurementNoiseCov = np.array([
+    [4, 1],
+    [1, 4]
+], dtype=np.float32)
+
+kalman.errorCovPost = np.array([
+    [2, 1, 0.75, 0.5],
+    [1, 2, 0.5, 0.75],
+    [0.75, 0.5, 2, 0.5],
+    [0.5, 0.75, 0.5, 2]
+], dtype=np.float32)
 
 
 while True:
@@ -94,7 +158,9 @@ while True:
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
 
-        if cv2.contourArea(largest_contour) >= area_thesh:     
+        if cv2.contourArea(largest_contour) >= area_thesh:
+
+            ball_found = True     
             cv2.drawContours(image, [largest_contour], -1, (0,0,255), 2)
 
             M = cv2.moments(largest_contour)
@@ -108,30 +174,49 @@ while True:
                 centre_x = int (width/2)
                 centre_y = int (height/2)
 
-                err_x = centre_x - cx
-                err_y = centre_y - cy
+                prediction = kalman.predict()
 
-                inside = cv2.pointPolygonTest(largest_contour, (centre_x, centre_y), False)
-                if inside >= 0:
-                    print("centred")
+                measurement = np.array([
+                    [cx],
+                    [cy]
+                ], dtype=np.float32)
 
-                else:
-                    print("not centred")
-                    if err_x > 0:
-                        pan_angle +=1
-                    elif err_x < 0:
-                        pan_angle -=1
+                x = kalman.correct(measurement)
 
-                    pan_angle = max(0, min(180, pan_angle))
 
-                    if err_y > 0:
-                        tilt_angle -=1
-                    elif err_y < 0:
-                        tilt_angle +=1
+                err_x = centre_x - x[0,0]
+                err_y = centre_y - x[1,0]
 
-                    tilt_angle = max(0, min(180, tilt_angle))
+                kp_pan = 0.027
+                kd_pan = 0.014
 
-    cv2.imshow("Stream", image)
+                kp_tilt = 0.015
+                kd_tilt = 0.014
+
+                deadband = 7
+
+                pan_step = kp_pan * err_x - kd_pan * x[2,0]
+                tilt_step = kp_tilt * err_y - kd_tilt * x[3,0]
+                pan_step = np.clip(pan_step, -3, 3)
+                tilt_step = np.clip(tilt_step, -3, 3)
+
+                if abs(err_x) > deadband:
+                    pan_angle = int(np.clip(pan_angle + pan_step, 0, 180))
+
+                if abs(err_y) > deadband:
+                    tilt_angle = int(np.clip(tilt_angle - tilt_step, 0, 180))
+
+                
+
+    success, encoded = cv2.imencode(".jpg", image)
+    if success:
+        latest_frame = encoded.tobytes()
+
+        with frame_condition:
+            new_frame = True
+            frame_condition.notify()
+
+
     if cv2.waitKey(1) == ord("q"):
         stop_event.set()
         break
